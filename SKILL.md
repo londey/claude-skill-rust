@@ -95,6 +95,36 @@ fn load_config(path: &Path) -> Result<Config> {
 }
 ```
 
+## Logging
+
+Avoid `println!` and `eprintln!` outside of main application entry points. Use the `log` crate for structured logging instead.
+
+```rust
+use log::{debug, info, warn, error};
+
+fn process_data(data: &[u8]) -> Result<(), ProcessError> {
+    debug!("Processing {} bytes", data.len());
+
+    if data.is_empty() {
+        warn!("Received empty data buffer");
+        return Err(ProcessError::EmptyInput);
+    }
+
+    info!("Data processed successfully");
+    Ok(())
+}
+```
+
+Log levels:
+
+- `error!` - Unrecoverable errors or failures
+- `warn!` - Unexpected conditions that are handled
+- `info!` - Significant events in normal operation
+- `debug!` - Detailed information for debugging
+- `trace!` - Very detailed tracing information
+
+Applications should initialise a log implementation (e.g., `env_logger`, `tracing-subscriber`) in `main()`.
+
 ## Whitespace and Formatting
 
 Maintain blank lines for readability:
@@ -107,7 +137,21 @@ Maintain blank lines for readability:
 
 ## Documentation
 
-All items require rustdoc documentation comments (`///` for public, `//!` for modules), including:
+All items require rustdoc documentation comments.
+
+For documenting the following item (functions, types, constants, fields):
+
+```rust
+/// Documentation for the item below.
+```
+
+For documenting the enclosing item (modules, crate root):
+
+```rust
+//! Documentation for the containing module.
+```
+
+Items requiring documentation include:
 
 - Functions and methods
 - Types (structs, enums, type aliases)
