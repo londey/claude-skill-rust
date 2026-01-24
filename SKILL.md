@@ -44,6 +44,57 @@ Key principles:
 
 **Important**: These are good defaults for new crates. Do not override existing lint configurations - if a crate already specifies `deny` or `allow` for a rule, respect that choice.
 
+## Error Handling
+
+Avoid `.unwrap()` and `.expect()` - these cause panics and should not be used in production code. Instead:
+
+- Use `Result<T, E>` return types with the `?` operator for error propagation
+- Prefer early returns for error conditions
+- Handle errors explicitly at appropriate boundaries
+
+### Error Type Crates
+
+- **Libraries**: Use `thiserror` to define custom error types with derive macros
+- **Applications**: Use `anyhow` for convenient error handling with context
+
+Example library error type with `thiserror`:
+
+```rust
+use thiserror::Error;
+
+/// Errors that can occur during data processing.
+#[derive(Debug, Error)]
+pub enum ProcessError {
+    /// The input data was empty.
+    #[error("input data cannot be empty")]
+    EmptyInput,
+
+    /// Failed to parse the input data.
+    #[error("failed to parse input: {0}")]
+    ParseFailure(String),
+
+    /// An I/O error occurred.
+    #[error("I/O error: {0}")]
+    Io(#[from] std::io::Error),
+}
+```
+
+Example application error handling with `anyhow`:
+
+```rust
+use anyhow::{Context, Result};
+
+fn load_config(path: &Path) -> Result<Config> {
+    let contents = std::fs::read_to_string(path)
+        .context("failed to read config file")?;
+
+    let config: Config = serde_json::from_str(&contents)
+        .context("failed to parse config JSON")?;
+
+    Ok(config)
+}
+```
+
 ## Whitespace and Formatting
 
 Maintain blank lines for readability:
