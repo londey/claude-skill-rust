@@ -130,10 +130,29 @@ Applications should initialise a log implementation (e.g., `env_logger`, `tracin
 Maintain blank lines for readability:
 
 - Between module-level items (functions, structs, enums, traits, constants, impl blocks)
-- Between struct and enum members
+- Between struct and enum members when they have doc comments
 - Between constant declarations
 - After `use` statements before the first item
 - After code blocks (loops, conditionals, match arms) before subsequent statements
+
+### Struct Field Formatting
+
+When struct or enum fields have documentation comments, add a blank line before each doc comment to visually separate the fields:
+
+```rust
+pub struct Handle<T> {
+    /// Index into the arena's resource vector.
+    index: usize,
+
+    /// Generation counter to detect stale handles after resource reuse.
+    generation: u32,
+
+    /// Type marker to prevent mixing handles of different resource types.
+    _marker: PhantomData<T>,
+}
+```
+
+For fields without documentation, blank lines are optional but may still aid readability for complex types.
 
 ## Documentation
 
