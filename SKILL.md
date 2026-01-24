@@ -11,9 +11,108 @@ allowed-tools: Read, Grep, Bash
 
 - Follow standard Rust conventions and idioms
 - Use `rustfmt` for code formatting
-- Use `clippy` for linting
+- Configure lints in `lib.rs` (see Crate-Level Lint Configuration below)
 - Prefer descriptive variable and function names
-- Add documentation comments (`///`) for public APIs
+
+## Crate-Level Lint Configuration
+
+Define lint rules at the top of `lib.rs` (or `main.rs` for binaries) rather than via command-line flags. This ensures consistent enforcement and documents project standards.
+
+```rust
+#![deny(unsafe_code)]
+#![cfg_attr(all(not(debug_assertions), not(test)), deny(clippy::all))]
+#![cfg_attr(all(not(debug_assertions), not(test)), deny(clippy::pedantic))]
+#![cfg_attr(all(not(debug_assertions), not(test)), deny(missing_docs))]
+// Allow some pedantic lints that are too strict for this project
+#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::must_use_candidate)]
+#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::missing_panics_doc)]
+#![allow(clippy::enum_variant_names)]
+// Until 1.0.0, allow dead code and unused dependency warnings
+#![allow(dead_code)]
+#![allow(unused_crate_dependencies)]
+
+```
+
+Key principles:
+
+- Deny `unsafe_code` unless explicitly required
+- Use `cfg_attr` to deny lints only in release builds (not debug or test)
+- Allow specific pedantic lints that conflict with project conventions
+- Document why each `allow` is necessary
+
+**Important**: These are good defaults for new crates. Do not override existing lint configurations - if a crate already specifies `deny` or `allow` for a rule, respect that choice.
+
+## Whitespace and Formatting
+
+Maintain blank lines for readability:
+
+- Between module-level items (functions, structs, enums, traits, constants, impl blocks)
+- Between struct and enum members
+- Between constant declarations
+- After `use` statements before the first item
+- After code blocks (loops, conditionals, match arms) before subsequent statements
+
+## Documentation
+
+All items require rustdoc documentation comments (`///` for public, `//!` for modules), including:
+
+- Functions and methods
+- Types (structs, enums, type aliases)
+- Traits and trait implementations
+- Constants and statics
+- Modules
+- Test functions
+- Struct and enum fields
+
+### Function Documentation
+
+Function documentation must include:
+
+- Brief description of purpose
+- `# Arguments` section documenting each parameter
+- `# Returns` section documenting the return value
+- `# Errors` section if the function returns `Result`
+- `# Panics` section if the function can panic
+
+Example:
+
+```rust
+/// Calculates the checksum for the given data buffer.
+///
+/// # Arguments
+///
+/// * `data` - The byte slice to calculate the checksum for.
+/// * `seed` - Initial seed value for the checksum algorithm.
+///
+/// # Returns
+///
+/// The computed 32-bit checksum value.
+///
+/// # Errors
+///
+/// Returns `ChecksumError::EmptyBuffer` if `data` is empty.
+fn calculate_checksum(data: &[u8], seed: u32) -> Result<u32, ChecksumError> {
+    // ...
+}
+```
+
+### Constant Documentation
+
+Constant documentation must include:
+
+- Description of the constant's purpose
+- Reference to specification, document, or section where applicable
+
+Example:
+
+```rust
+/// Maximum transmission unit size in bytes.
+///
+/// Per RFC 894, Section 3 - Ethernet frames have a maximum payload of 1500 bytes.
+const MTU_SIZE: usize = 1500;
+```
 
 ## Testing
 
@@ -21,18 +120,20 @@ allowed-tools: Read, Grep, Bash
 - Use integration tests in the `tests/` directory for end-to-end functionality
 - Run tests with `cargo test`
 - Aim for meaningful test coverage of core functionality
+- Document test functions with their purpose and what they verify
 
 ## Build Verification
 
 After completing changes to Rust code, run the following checks in order:
 
-1. **Format Check**: `cargo fmt --check`
-2. **Lint Check**: `cargo clippy -- -D warnings`
-3. **Tests**: `cargo test`
-4. **Release Build**: `cargo build --release`
-5. **Documentation**: `cargo doc --no-deps --document-private-items`
-6. **License Check**: `cargo deny check`
-7. **Security Audit**: `cargo audit`
+1. **Format Code**: `cargo fmt`
+2. **Format Check**: `cargo fmt --check`
+3. **Lint Check**: `cargo clippy -- -D warnings`
+4. **Tests**: `cargo test`
+5. **Release Build**: `cargo build --release`
+6. **Documentation**: `cargo doc --no-deps --document-private-items`
+7. **License Check**: `cargo deny check`
+8. **Security Audit**: `cargo audit`
 
 If any check fails, fix the issues before proceeding.
 
@@ -51,3 +152,23 @@ When adding dependencies:
 - Choose well-maintained crates widely used in the Rust ecosystem
 - For workspaces, add shared dependencies to `[workspace.dependencies]` in root `Cargo.toml`
 - Justify each dependency with a clear use case
+- Disable default features and explicitly enable only required features
+
+### Minimising Dependencies
+
+Always add dependencies with `default-features = false` and explicitly specify the features you need. This reduces compile times and binary size by avoiding unnecessary transitive dependencies.
+
+```toml
+# Prefer this:
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+
+# Avoid this:
+serde = "1.0"
+```
+
+When adding a new dependency:
+
+1. Check the crate's documentation for available features
+2. Identify the minimum set of features required for your use case
+3. Add with `default-features = false`
+4. Explicitly list only the features you need
