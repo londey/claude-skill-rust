@@ -2,7 +2,7 @@
 name: rust
 description: Guide for Rust development including code style, testing, building, and quality checks using cargo tools. Apply when working with Rust code, Cargo.toml, or running cargo commands.
 user-invocable: true
-allowed-tools: Read, Grep, Bash
+allowed-tools: Read, Grep, Bash, mcp__cargo-mcp__*
 ---
 
 # Rust Development Guide
@@ -275,18 +275,48 @@ const MTU_SIZE: usize = 1500;
 - Aim for meaningful test coverage of core functionality
 - Document test functions with their purpose and what they verify
 
+## Cargo Tool Execution
+
+Prefer using the cargo-mcp MCP server when available. Fall back to Bash with direct cargo commands when the MCP server is not configured.
+
+**cargo-mcp tools** (preferred):
+
+- `cargo_check` - Verify code compiles without producing executables
+- `cargo_clippy` - Run the Clippy linter
+- `cargo_test` - Execute tests
+- `cargo_fmt_check` - Validate code formatting
+- `cargo_build` - Compile the project
+- `cargo_bench` - Run benchmarks
+- `cargo_add` / `cargo_remove` - Manage dependencies
+- `cargo_update` - Update dependencies
+- `cargo_clean` - Remove build artifacts
+- `cargo_run` - Execute binaries or examples
+
+Benefits of cargo-mcp:
+
+- Whitelisted commands only (prevents arbitrary execution)
+- Path validation (confirms Cargo.toml presence)
+- Command isolation to project directories
+- Structured output for better error handling
+
+**Bash fallback**: When cargo-mcp is unavailable, use Bash to run cargo commands directly (e.g., `cargo check`, `cargo clippy`).
+
 ## Build Verification
 
-After completing changes to Rust code, run the following checks in order:
+After completing changes to Rust code, run the following checks in order. Use cargo-mcp tools when available, otherwise use Bash.
 
-1. **Format Code**: `cargo fmt`
-2. **Format Check**: `cargo fmt --check`
-3. **Lint Check**: `cargo clippy -- -D warnings`
-4. **Tests**: `cargo test`
-5. **Release Build**: `cargo build --release`
-6. **Documentation**: `cargo doc --no-deps --document-private-items`
-7. **License Check**: `cargo deny check`
-8. **Security Audit**: `cargo audit`
+| Step              | cargo-mcp                    | Bash                                            |
+| ----------------- | ---------------------------- | ----------------------------------------------- |
+| 1. Format code    | `cargo_fmt`                  | `cargo fmt`                                     |
+| 2. Format check   | `cargo_fmt_check`            | `cargo fmt --check`                             |
+| 3. Lint check     | `cargo_clippy`               | `cargo clippy -- -D warnings`                   |
+| 4. Tests          | `cargo_test`                 | `cargo test`                                    |
+| 5. Release build  | `cargo_build` (release mode) | `cargo build --release`                         |
+| 6. Documentation  | —                            | `cargo doc --no-deps --document-private-items`  |
+| 7. License check  | —                            | `cargo deny check`                              |
+| 8. Security audit | —                            | `cargo audit`                                   |
+
+Note: Steps 6-8 require Bash as cargo-mcp does not expose these commands.
 
 If any check fails, fix the issues before proceeding.
 
