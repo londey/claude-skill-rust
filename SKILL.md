@@ -14,6 +14,45 @@ allowed-tools: Read, Grep, Bash
 - Configure lints in `lib.rs` (see Crate-Level Lint Configuration below)
 - Prefer descriptive variable and function names
 
+## Module File Organization
+
+Prefer the modern `<module_name>.rs` style over the legacy `mod.rs` style for module files.
+
+**Preferred (modern style):**
+
+```text
+src/
+├── lib.rs
+├── config.rs        # mod config
+├── config/
+│   └── parser.rs    # mod config::parser
+├── network.rs       # mod network
+└── network/
+    ├── client.rs    # mod network::client
+    └── server.rs    # mod network::server
+```
+
+**Avoid (legacy style):**
+
+```text
+src/
+├── lib.rs
+├── config/
+│   ├── mod.rs       # mod config
+│   └── parser.rs    # mod config::parser
+└── network/
+    ├── mod.rs       # mod network
+    ├── client.rs    # mod network::client
+    └── server.rs    # mod network::server
+```
+
+Benefits of the modern style:
+
+- File names directly indicate the module name (no ambiguous `mod.rs` files)
+- Easier navigation in editors and file browsers
+- Clear correspondence between module path and file path
+- Supported since Rust 2018 edition
+
 ## Crate-Level Lint Configuration
 
 Define lint rules at the top of `lib.rs` (or `main.rs` for binaries) rather than via command-line flags. This ensures consistent enforcement and documents project standards.
