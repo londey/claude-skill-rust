@@ -93,6 +93,8 @@ Avoid `.unwrap()` and `.expect()` - these cause panics and should not be used in
 
 ### Error Type Crates
 
+**Note**: The following recommendations apply to `std` crates only. For `no_std` embedded targets, use custom error enums or `thiserror` with `default-features = false`.
+
 - **Libraries**: Use `thiserror` to define custom error types with derive macros
 - **Applications**: Use `anyhow` for convenient error handling with context
 
@@ -135,6 +137,8 @@ fn load_config(path: &Path) -> Result<Config> {
 ```
 
 ## Logging
+
+**Note**: The following recommendations apply to `std` crates only. For `no_std` embedded targets, use `defmt` or platform-specific logging mechanisms.
 
 Avoid `println!` and `eprintln!` outside of main application entry points. Use the `log` crate for structured logging instead.
 
