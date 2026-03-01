@@ -1,5 +1,5 @@
 ---
-name: rust
+name: claude-skill-rust
 description: Guide for Rust development including code style, testing, building, and quality checks using cargo tools. Apply when working with Rust code, Cargo.toml, or running cargo commands.
 user-invocable: true
 allowed-tools: Read, Grep, Bash
